@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 var express = require('express')
 var session = require('express-session')
 var passport = require('passport')
@@ -32,14 +34,15 @@ passport.use(new OAuth2Strategy({
   clientSecret: config.COGNITO_APP_CLIENT_SECRET,
   callbackURL: config.COGNITO_APP_CLIENT_CALLBACK_URL
 },
-function (accessToken, refreshToken, profile, done) {
-  let jwk = JSON.parse(config.COGNITO_JWK)
-  let pem = jwkToPem(jwk)
-  let payload = jwt.verify(accessToken, pem)
-  let groups = payload['cognito:groups'] || []
+  function (accessToken, refreshToken, profile, done) {
+    // let jwk = JSON.parse(config.COGNITO_JWK)
+    let jwk = config.COGNITO_JWK
+    let pem = jwkToPem(jwk)
+    let payload = jwt.verify(accessToken, pem)
+    let groups = payload['cognito:groups'] || []
 
-  done(null, { groups: groups, accessToken: accessToken }) // Keep accessToken for passing to API calls
-}))
+    done(null, { groups: groups, accessToken: accessToken }) // Keep accessToken for passing to API calls
+  }))
 passport.serializeUser(function (user, done) {
   done(null, user)
 })
